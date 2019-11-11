@@ -1,25 +1,30 @@
 import sys
 
+#This script reads in a 3-column file containing a scaffold name, beginning coordinate, 
+#and end coordinate. The columns should be seperated by whitespace. Each of the 
+#scaffolds should have a separate file named exactly how its named in the 3-column file.
+#The script will read in the sequences and write them into the file from the -out parameter.
+#The files should all be in the same directory which should be included in the -path parameter
+
 def main():
-    outFile, srcFile = ParseArgs(sys.argv)
-    outFile += ".fasta"
-    file = open(outFile, "w+") #merged_hits_from_robu_run
-    file = open(srcFile, "r")# merged_hits_robu_run_coordinates
+    outFile, srcFile, path_to_files = ParseArgs(sys.argv)
+    outFile = path_to_files + outFile + ".fasta"
+    file = open(outFile, "w+")
+    file = open(path_to_files+srcFile, "r")
     seq_coord_as_list = file.readlines()
     hit_dict = {}
-    path_to_scaf_files = "/home/davidsonlab/Desktop/Genomes/Robusta/"
 
     parse_hits(seq_coord_as_list, hit_dict)
     scaf_dict = {}
     
     for scaf in hit_dict:
-        scaf_dict[scaf] = parse_scaffolds(scaf, path_to_scaf_files)
-        write_hits(scaf_dict[scaf], hit_dict[scaf], scaf)    
+        scaf_dict[scaf] = parse_scaffolds(scaf, path_to_files)
+        write_hits(scaf_dict[scaf], hit_dict[scaf], scaf, outFile)    
 
 #writes out the files in fasta format
-def write_hits(scaf_sequence, hits_as_list, scaf_name):
+def write_hits(scaf_sequence, hits_as_list, scaf_name, output_file):
     curr_hit = ""
-    file = open("/home/davidsonlab/Desktop/hits_from_xmlparser.fasta", "a") #merged_hits_from_robu_run.fasta
+    file = open(output_file, "a")
     for hit in hits_as_list:
         curr_hit = scaf_sequence[int(hit[0]) - 1:int(hit[1])]
         seq_name_coord = ">{} {}-{}\n"
@@ -52,29 +57,27 @@ def parse_hits(seq_coord_as_list, hit_dict):
             hit_dict[curr_line[0]].append((curr_line[1], curr_line[2]))
 
 def ParseArgs(inputs):
-    i = 0
-    
-    while i < len(inputs):
+    i = 1
+    outFile = ""
+    srcFile = ""
+    path = ""
+    if len(inputs) == 0:
+        print("Hello, there are 3 required parameters: -src (file with 3 columns: scaffold, begin, and end seperated by whitespace, please provide full path), -path (path to src and scaffold files) -out (prefix for fasta file, will be generated in path directory)")
+        quit()
 
+    while i < len(inputs) - 1:
         if inputs[i] == "-out":
-            onOut = True
-            onSrc = False
-            i += 1
+            outFile = inputs[i + 1]
         elif inputs[i] == "-src":
-            onOut = False
-            onSrc = True
-            i += 1
-
+            srcFile = inputs[i + 1]
+        elif inputs[i] == "-path":
+            path = inputs[i + 1]
         elif inputs[i] == "-help":
-            print("Hello, there are 2 required parameters: -src (file with 3 columns: scaffold, begin, and end seperated by whitespace, please provide full path), -out (prefix for fasta file))
-
-        elif onSrc == True:
-            srcFile = input[i]
-        elif onOut == True:
-            outFile = input[i]
-
+            print("Hello, there are 3 required parameters: -src (file with 3 columns: scaffold, begin, and end seperated by whitespace, please provide full path), -path (path to src and scaffold files) -out (prefix for fasta file, will be generated in path directory)")
+            quit()
         i += 1
-    return [srcFile, outFile]
+
+    return [outFile, srcFile, path]
 
 
 main()
