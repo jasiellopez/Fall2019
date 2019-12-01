@@ -2,6 +2,8 @@ import sys
 
 #This script compares checks if two sequence coordinates have any overlap
 #If there is an overlap, the pair is written out to the -out file
+#In the output file, file 1 is the first file in the -files argument and 
+#file 2 is the second file
 
 def main():
     file1, file2, outFile = ParseArgs(sys.argv)
@@ -11,20 +13,16 @@ def main():
     readInFiles(file1, file1_dict)
     readInFiles(file2, file2_dict)
     file = open(outFile, "w+")
-    file.write("chr" + "\t" + "beg" + "\t" + "end" + "\n")
+    file.write("chr" + "\t" + "File1" + "\t\t" + "File2" + "\n")
     findOverlap(file1_dict, file2_dict, file)
 
 def findOverlap(file1_dict, file2_dict, file):
     for scaf in file1_dict:
-        print(scaf)
         if scaf in file2_dict:
             for file1Coord in file1_dict[scaf]:
-                if(file1Coord == (3597948, 3598944)):
-                    print(file2_dict[scaf])
                 for file2Coord in file2_dict[scaf]:
                     if ((file1Coord[0] >= file2Coord[0] and file1Coord[0] <= file2Coord[1]) or (file1Coord[1] <= file2Coord[1] and file1Coord[1] >= file2Coord[0]) or (file2Coord[0] >= file1Coord[0] and file2Coord[0] <= file1Coord[1]) or (file2Coord[1] <= file1Coord[1] and file2Coord[1] >= file1Coord[0])):
-                        print("here")
-                        file.write(scaf + str(file1Coord) + " " + str(file2Coord) + "\n")
+                        file.write("{}\t{}-{}\t{}-{}\n".format (scaf, file1Coord[0], file1Coord[1], file2Coord[0], file2Coord[1]))
 
 #parses the coordinate file and creates a dict where key is scaffold name and value is a list of pairs
 #the pair is the start and end coordinate for the scaffold
